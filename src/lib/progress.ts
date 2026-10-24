@@ -25,7 +25,7 @@ export function applyReview(p: Progress, char: string, grade: Grade, at: Date): 
   const card: Card = p.cards[char] ?? newCard(at)
   return {
     ...p,
-    cards: { ...p.cards, [char]: review(card, grade, at) },
+    cards: { ...p.cards, [char]: review(card, grade, at, p.settings.retention) },
     unverified: omit(p.unverified, char),
     wantToLearn: p.wantToLearn.filter((c) => c !== char),
     history: logCommit(p.history, dayKey(at), !p.cards[char]),

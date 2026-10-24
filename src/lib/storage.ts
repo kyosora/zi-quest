@@ -1,5 +1,5 @@
 import type { Card } from 'ts-fsrs'
-import { SEED_STABILITY } from './srs'
+import { RETENTION, SEED_STABILITY } from './srs'
 import type { Progress } from './types'
 
 const KEY = 'zi-quest.progress.v1'
@@ -12,7 +12,7 @@ export const DEFAULT_PROGRESS: Progress = {
   placementDone: false,
   unverified: {},
   wantToLearn: [],
-  settings: { newPerDay: 8, maxReviews: 40, speechRate: 0.85 },
+  settings: { newPerDay: 8, maxReviews: 40, speechRate: 0.85, retention: RETENTION.dense },
   history: [],
 }
 

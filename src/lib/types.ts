@@ -32,6 +32,8 @@ export interface Settings {
   newPerDay: number
   maxReviews: number
   speechRate: number
+  /** 目標記憶率：0.9 標準、0.95 密集（間隔較短、複習較多） */
+  retention: number
 }
 
 export interface DayLog {

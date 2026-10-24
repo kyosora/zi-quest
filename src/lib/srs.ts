@@ -1,13 +1,23 @@
-import { createEmptyCard, fsrs, Rating, State, type Card, type Grade } from 'ts-fsrs'
+import { createEmptyCard, fsrs, Rating, State, type Card, type FSRS, type Grade } from 'ts-fsrs'
 import type { QuestionKind } from './types'
 
+export const RETENTION = { standard: 0.9, dense: 0.95 } as const
+
 // 同一天內的重複由 session 自己排（答錯會再出一題），FSRS 只管跨天的間隔
-const scheduler = fsrs({
-  request_retention: 0.9,
-  enable_short_term: false,
-  enable_fuzz: true,
-  maximum_interval: 365,
-})
+const schedulers = new Map<number, FSRS>()
+
+function schedulerFor(retention: number): FSRS {
+  const cached = schedulers.get(retention)
+  if (cached) return cached
+  const created = fsrs({
+    request_retention: retention,
+    enable_short_term: false,
+    enable_fuzz: true,
+    maximum_interval: 365,
+  })
+  schedulers.set(retention, created)
+  return created
+}
 
 const DAY_MS = 86_400_000
 /** 分級測驗判定已會的字一律從「熟悉」（銀）起跳，抽查答對再升金 */
@@ -28,8 +38,8 @@ export function gradeAnswer(kind: QuestionKind, correct: boolean, ms: number): G
   return Rating.Good
 }
 
-export function review(card: Card, grade: Grade, now: Date): Card {
-  return scheduler.next(card, now, grade).card
+export function review(card: Card, grade: Grade, now: Date, retention: number = RETENTION.standard): Card {
+  return schedulerFor(retention).next(card, now, grade).card
 }
 
 /**

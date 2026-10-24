@@ -6,7 +6,7 @@ import { newCard, seedKnownCard } from '../src/lib/srs'
 import { index, seqRng } from './fixtures'
 
 const now = new Date('2026-10-24T10:00:00')
-const settings = { newPerDay: 2, maxReviews: 5, speechRate: 1 }
+const settings = { newPerDay: 2, maxReviews: 5, speechRate: 1, retention: 0.9 }
 const retry = (c: string) => makeQuestion('listen', index.byChar.get(c)!, index, seqRng())
 
 function dueCard(daysAgo: number) {

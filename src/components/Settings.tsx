@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks'
 import { speak, voiceName } from '../lib/speech'
+import { RETENTION } from '../lib/srs'
 import { parseProgress } from '../lib/storage'
 import type { Progress, Settings as SettingsType } from '../lib/types'
 
@@ -69,6 +70,29 @@ export function Settings({ progress, onChange, onImport, onRedoPlacement, onBack
           onInput={(e) => set({ maxReviews: Number(e.currentTarget.value) })}
         />
       </label>
+
+      <div class="setting">
+        <span>複習頻率</span>
+        <div class="row">
+          <button
+            class={settings.retention === RETENTION.dense ? 'primary' : 'secondary'}
+            onClick={() => set({ retention: RETENTION.dense })}
+          >
+            密集
+          </button>
+          <button
+            class={settings.retention === RETENTION.standard ? 'primary' : 'secondary'}
+            onClick={() => set({ retention: RETENTION.standard })}
+          >
+            標準
+          </button>
+        </div>
+        <span class="muted small-text">
+          {settings.retention === RETENTION.dense
+            ? '同一個字更早再出現，比較不會忘，每天複習題多三到五成'
+            : '複習題比較少，適合已經記得很穩的時候'}
+        </span>
+      </div>
 
       <label class="setting">
         <span>

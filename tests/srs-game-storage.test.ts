@@ -85,3 +85,18 @@ describe('進度存取', () => {
     expect(() => parseProgress('{"foo":1}')).toThrow('進度檔格式不對')
   })
 })
+
+describe('複習頻率', () => {
+  it('密集模式的間隔比標準短', () => {
+    const card = seedKnownCard(now, 10)
+    const later = new Date(now.getTime() + 10 * 86_400_000)
+    const standard = review(card, Rating.Good, later, 0.9)
+    const dense = review(card, Rating.Good, later, 0.95)
+    expect(dense.scheduled_days).toBeLessThan(standard.scheduled_days)
+  })
+
+  it('舊進度沒有這個設定時預設用密集', () => {
+    const old = { ...DEFAULT_PROGRESS, settings: { newPerDay: 8, maxReviews: 40, speechRate: 0.85 } }
+    expect(parseProgress(JSON.stringify(old)).settings.retention).toBe(0.95)
+  })
+})
