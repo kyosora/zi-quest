@@ -1,0 +1,6 @@
+node_modules
+dist
+raw/*.gz
+raw/*.html
+raw/*.txt
+dev-dist
