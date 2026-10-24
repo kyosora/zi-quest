@@ -104,11 +104,12 @@ interface DetailProps {
   onClose: () => void
 }
 
+/** 任何等級都能丟回去重學：學障者忘得快，看不懂就該讓他自己推回去，不用等抽查 */
 function learnLabel(tier: Tier, queued: boolean): string | null {
   if (queued) return null
   if (tier === 'none') return '想先學這個'
-  if (tier === 'bronze') return null
-  return '這個我不會，排進學習'
+  if (tier === 'unverified') return '這個我不會，排進學習'
+  return '看不懂了，丟回未收集重學'
 }
 
 function CodexDetail({ entry, index, progress, onRequestLearn, onClose }: DetailProps) {
