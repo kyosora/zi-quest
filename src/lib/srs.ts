@@ -11,7 +11,7 @@ const scheduler = fsrs({
 
 const DAY_MS = 86_400_000
 /** 分級測驗判定已會的字一律從「熟悉」（銀）起跳，抽查答對再升金 */
-const SEED_STABILITY = 10
+export const SEED_STABILITY = 10
 
 /** 答得很慢代表還在想，給 Hard；各題型的門檻不同，因為選音題要先把四個選項聽完 */
 const SLOW_MS: Record<QuestionKind, number> = { listen: 12_000, read: 25_000, flash: 15_000 }
@@ -49,7 +49,7 @@ export function seedKnownCard(now: Date, dueInDays: number, stability = SEED_STA
   }
 }
 
-export type Tier = 'none' | 'bronze' | 'silver' | 'gold'
+export type Tier = 'none' | 'unverified' | 'bronze' | 'silver' | 'gold'
 
 /** 圖鑑稀有度：還沒學／剛學會／熟悉（一週以上記得住）／精通（一個月以上） */
 export function tierOf(card: Card | undefined): Tier {

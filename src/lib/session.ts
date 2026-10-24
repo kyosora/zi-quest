@@ -24,11 +24,16 @@ export function pickReviews(cards: Record<string, Card>, now: Date, limit: numbe
     .map(([c]) => c)
 }
 
-export function pickNewChars(index: CharIndex, cards: Record<string, Card>, limit: number): string[] {
-  return index.list
-    .filter((e) => !cards[e.c])
-    .slice(0, limit)
-    .map((e) => e.c)
+/** 使用者指定的字優先，再依字頻挑還沒學過的 */
+export function pickNewChars(
+  index: CharIndex,
+  cards: Record<string, Card>,
+  limit: number,
+  wanted: string[] = [],
+): string[] {
+  const unlearned = (c: string) => !cards[c] && index.byChar.has(c)
+  const byRank = index.list.map((e) => e.c)
+  return [...new Set([...wanted, ...byRank])].filter(unlearned).slice(0, limit)
 }
 
 export function buildSession(
@@ -37,9 +42,10 @@ export function buildSession(
   settings: Settings,
   now: Date,
   rng: Rng,
+  wanted: string[] = [],
 ): SessionPlan {
   const reviewChars = pickReviews(cards, now, settings.maxReviews)
-  const newChars = pickNewChars(index, cards, settings.newPerDay)
+  const newChars = pickNewChars(index, cards, settings.newPerDay, wanted)
   const entry = (c: string) => index.byChar.get(c)!
 
   const reviewSteps: Step[] = reviewChars.map((c) => ({

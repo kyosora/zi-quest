@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
-import type { Card, Grade } from 'ts-fsrs'
+import type { Grade } from 'ts-fsrs'
 import { Codex } from './components/Codex'
 import { Home } from './components/Home'
 import { Placement } from './components/Placement'
@@ -11,9 +11,9 @@ import { dayKey, levelFromXp, NEW_CHAR_XP, SESSION_XP, updateStreak } from './li
 import { buildSession, pickReviews, type SessionPlan } from './lib/session'
 import { unlockAudio } from './lib/sfx'
 import { hasChineseVoice, initSpeech, setSpeechRate, speak } from './lib/speech'
-import { newCard, review } from './lib/srs'
+import { applyPlacement, applyReview, requestLearn, todayLog } from './lib/progress'
 import { DEFAULT_PROGRESS, loadProgress, requestPersistence, saveProgress } from './lib/storage'
-import type { CharIndex, DayLog, Progress } from './lib/types'
+import type { CharIndex, Progress } from './lib/types'
 
 type Screen =
   | { name: 'welcome' }
@@ -25,18 +25,7 @@ type Screen =
   | { name: 'settings' }
 
 const EXTRA_NEW = 5
-const HISTORY_DAYS = 90
 const rng = Math.random
-
-function todayLog(history: DayLog[], day: string): DayLog {
-  return history.find((h) => h.day === day) ?? { day, reviewed: 0, learned: 0 }
-}
-
-function logCommit(history: DayLog[], day: string, isNew: boolean): DayLog[] {
-  const log = todayLog(history, day)
-  const updated = isNew ? { ...log, learned: log.learned + 1 } : { ...log, reviewed: log.reviewed + 1 }
-  return [...history.filter((h) => h.day !== day), updated].slice(-HISTORY_DAYS)
-}
 
 export function App() {
   const [index, setIndex] = useState<CharIndex | null>(null)
@@ -65,20 +54,12 @@ export function App() {
 
   function startSession(newPerDay: number, maxReviews: number) {
     const settings = { ...progress.settings, newPerDay, maxReviews }
-    const plan = buildSession(index!, progress.cards, settings, new Date(), rng)
+    const plan = buildSession(index!, progress.cards, settings, new Date(), rng, progress.wantToLearn)
     if (plan.steps.length > 0) setScreen({ name: 'session', plan })
   }
 
   function commit(char: string, grade: Grade) {
-    const at = new Date()
-    setProgress((p) => {
-      const card: Card = p.cards[char] ?? newCard(at)
-      return {
-        ...p,
-        cards: { ...p.cards, [char]: review(card, grade, at) },
-        history: logCommit(p.history, dayKey(at), !p.cards[char]),
-      }
-    })
+    setProgress((p) => applyReview(p, char, grade, new Date()))
   }
 
   function endSession(summary: SessionSummary) {
@@ -124,7 +105,7 @@ export function App() {
           index={index}
           rng={rng}
           onComplete={(cards) => {
-            setProgress((p) => ({ ...p, cards: { ...cards, ...p.cards }, placementDone: true }))
+            setProgress((p) => applyPlacement(p, cards))
             setScreen({ name: 'home' })
           }}
         />
@@ -151,7 +132,14 @@ export function App() {
         />
       )
     case 'codex':
-      return <Codex index={index} cards={progress.cards} onBack={() => setScreen({ name: 'home' })} />
+      return (
+        <Codex
+          index={index}
+          progress={progress}
+          onRequestLearn={(char) => setProgress((p) => requestLearn(p, char))}
+          onBack={() => setScreen({ name: 'home' })}
+        />
+      )
     case 'settings':
       return (
         <Settings

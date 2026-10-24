@@ -1,5 +1,5 @@
 import { levelFromXp, titleFor } from '../lib/game'
-import { isKnown } from '../lib/srs'
+import { collectionStats } from '../lib/progress'
 import type { Progress } from '../lib/types'
 
 interface Props {
@@ -17,8 +17,8 @@ interface Props {
 
 export function Home({ progress, total, dueCount, newCount, unlearned, onStart, onExtra, onCodex, onSettings }: Props) {
   const { level, into, span } = levelFromXp(progress.xp)
-  const known = Object.values(progress.cards).filter(isKnown).length
-  const pct = Math.round((known / total) * 1000) / 10
+  const { collected, unverified } = collectionStats(progress)
+  const pct = Math.round((collected / total) * 1000) / 10
   const questDone = dueCount === 0 && newCount === 0
 
   return (
@@ -42,11 +42,12 @@ export function Home({ progress, total, dueCount, newCount, unlearned, onStart, 
       <section class="collection-stat" onClick={onCodex}>
         <div class="ring" style={{ '--pct': `${pct}%` }}>
           <div class="ring-inner">
-            <span class="big-number">{known}</span>
+            <span class="big-number">{collected}</span>
             <span class="muted">/ {total}</span>
           </div>
         </div>
         <p>已收集的字 · {pct}%</p>
+        {unverified > 0 && <p class="muted small-text">還有 {unverified} 字待確認，抽查答對就收進來</p>}
       </section>
 
       <section class="quest">

@@ -46,6 +46,10 @@ export interface Progress {
   xp: number
   streak: { count: number; lastDay: string }
   placementDone: boolean
+  /** 分級測驗推估會、還沒被抽查證實的字；抽查一次後移除 */
+  unverified: Record<string, true>
+  /** 使用者在圖鑑指定要學的字，排在字頻順序前面 */
+  wantToLearn: string[]
   settings: Settings
   history: DayLog[]
 }

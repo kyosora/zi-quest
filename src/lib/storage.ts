@@ -1,4 +1,5 @@
 import type { Card } from 'ts-fsrs'
+import { SEED_STABILITY } from './srs'
 import type { Progress } from './types'
 
 const KEY = 'zi-quest.progress.v1'
@@ -9,6 +10,8 @@ export const DEFAULT_PROGRESS: Progress = {
   xp: 0,
   streak: { count: 0, lastDay: '' },
   placementDone: false,
+  unverified: {},
+  wantToLearn: [],
   settings: { newPerDay: 8, maxReviews: 40, speechRate: 0.85 },
   history: [],
 }
@@ -33,7 +36,20 @@ export function parseProgress(json: string): Progress {
     ...raw,
     settings: { ...DEFAULT_PROGRESS.settings, ...raw.settings },
     cards,
+    unverified: raw.unverified ?? inferUnverified(cards),
   }
+}
+
+/**
+ * 舊版進度沒有 unverified 欄位：分級測驗產生、之後沒被複習過的卡片
+ * 還保留 seed 的原始數值（reps 1、難度 5、stability 10），用這個特徵認回來。
+ */
+function inferUnverified(cards: Record<string, Card>): Record<string, true> {
+  return Object.fromEntries(
+    Object.entries(cards)
+      .filter(([, c]) => c.reps === 1 && c.lapses === 0 && c.difficulty === 5 && c.stability === SEED_STABILITY)
+      .map(([ch]) => [ch, true as const]),
+  )
 }
 
 export function loadProgress(): Progress {
