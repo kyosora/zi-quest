@@ -122,6 +122,8 @@ export function Settings({ progress, onChange, onImport, onRedoPlacement, onBack
 
       <p class="muted small-text credits">
         字表資料：蔡志浩繁體字頻、CC-CEDICT（CC BY-SA 4.0）、Make Me a Hanzi、wordfreq
+        <br />
+        版本 {__BUILD__}
       </p>
     </div>
   )

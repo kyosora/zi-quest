@@ -3,7 +3,13 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vitest/config'
 
+const sha = process.env.GITHUB_SHA?.slice(0, 7) ?? 'local'
+const builtAt = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 16)
+
 export default defineConfig({
+  define: {
+    __BUILD__: JSON.stringify(`${builtAt} · ${sha}`),
+  },
   // 相對路徑，部署到 GitHub Pages 子路徑或任何靜態主機都能用
   base: './',
   plugins: [
