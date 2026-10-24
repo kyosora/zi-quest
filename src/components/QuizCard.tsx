@@ -94,7 +94,8 @@ export function QuizCard({ question, entry, combo, quiet = false, onDone }: Prop
             {audioOptions && !result ? (
               <span class="audio-label">🔊 {i + 1}</span>
             ) : (
-              <Word word={option.text} target={option.correct ? question.char : undefined} />
+              // 作答前四個選項必須長得一模一樣，標色只在公布答案後才出現
+              <Word word={option.text} target={result && option.correct ? question.char : undefined} />
             )}
           </button>
         ))}
