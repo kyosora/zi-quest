@@ -11,7 +11,7 @@ import { dayKey, levelFromXp, NEW_CHAR_XP, SESSION_XP, updateStreak } from './li
 import { buildSession, pickReviews, type SessionPlan } from './lib/session'
 import { unlockAudio } from './lib/sfx'
 import { hasChineseVoice, initSpeech, setSpeechRate, speak } from './lib/speech'
-import { applyPlacement, applyReview, requestLearn, todayLog } from './lib/progress'
+import { applyPlacement, applyReview, requestLearn, resetForPlacement, todayLog } from './lib/progress'
 import { DEFAULT_PROGRESS, loadProgress, requestPersistence, saveProgress } from './lib/storage'
 import type { CharIndex, Progress } from './lib/types'
 
@@ -136,7 +136,7 @@ export function App() {
         <Codex
           index={index}
           progress={progress}
-          onRequestLearn={(char) => setProgress((p) => requestLearn(p, char))}
+          onRequestLearn={(char) => setProgress((p) => requestLearn(p, char, new Date()))}
           onBack={() => setScreen({ name: 'home' })}
         />
       )
@@ -147,7 +147,7 @@ export function App() {
           onChange={(settings) => setProgress((p) => ({ ...p, settings }))}
           onImport={setProgress}
           onRedoPlacement={() => {
-            setProgress({ ...DEFAULT_PROGRESS, settings: progress.settings })
+            setProgress((p) => resetForPlacement(p, DEFAULT_PROGRESS, new Date()))
             setScreen({ name: 'placement' })
           }}
           onBack={() => setScreen({ name: 'home' })}

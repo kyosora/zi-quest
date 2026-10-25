@@ -42,6 +42,12 @@ export interface DayLog {
   learned: number
 }
 
+/**
+ * 一筆作答紀錄，之後拿來訓練他專屬的 FSRS 參數。用 tuple 省空間（一年約一萬五千筆）。
+ * [字, 時間（Unix 秒）, 評分 1–4（0 = 圖鑑丟回重學）, 1 = 分級測驗推估字的第一次抽查]
+ */
+export type ReviewEntry = [char: string, at: number, rating: number, seeded?: 1]
+
 export interface Progress {
   version: 1
   cards: Record<string, Card>
@@ -54,6 +60,8 @@ export interface Progress {
   wantToLearn: string[]
   settings: Settings
   history: DayLog[]
+  /** 只增不刪；分級測驗 seed 的卡片不是真的複習，不記 */
+  reviewLog: ReviewEntry[]
 }
 
 export type QuestionKind = 'listen' | 'read' | 'flash'

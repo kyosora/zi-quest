@@ -14,6 +14,7 @@ export const DEFAULT_PROGRESS: Progress = {
   wantToLearn: [],
   settings: { newPerDay: 8, maxReviews: 40, speechRate: 0.85, retention: RETENTION.dense },
   history: [],
+  reviewLog: [],
 }
 
 /** JSON 會把 Date 變成字串，讀回來要還原，FSRS 才算得了間隔 */

@@ -1,7 +1,7 @@
-import type { Card, Grade } from 'ts-fsrs'
+import { Rating, type Card, type Grade } from 'ts-fsrs'
 import { dayKey } from './game'
 import { newCard, review, tierOf, type Tier } from './srs'
-import type { DayLog, Progress } from './types'
+import type { DayLog, Progress, ReviewEntry } from './types'
 
 const HISTORY_DAYS = 90
 
@@ -20,6 +20,11 @@ function logCommit(history: DayLog[], day: string, isNew: boolean): DayLog[] {
   return [...history.filter((h) => h.day !== day), updated].slice(-HISTORY_DAYS)
 }
 
+function entry(char: string, at: Date, rating: number, seeded: boolean): ReviewEntry {
+  const t = Math.floor(at.getTime() / 1000)
+  return seeded ? [char, t, rating, 1] : [char, t, rating]
+}
+
 /** 一個字在 session 裡考完：寫進 FSRS；不管對錯，都不再是「待確認」 */
 export function applyReview(p: Progress, char: string, grade: Grade, at: Date): Progress {
   const card: Card = p.cards[char] ?? newCard(at)
@@ -29,6 +34,7 @@ export function applyReview(p: Progress, char: string, grade: Grade, at: Date): 
     unverified: omit(p.unverified, char),
     wantToLearn: p.wantToLearn.filter((c) => c !== char),
     history: logCommit(p.history, dayKey(at), !p.cards[char]),
+    reviewLog: [...p.reviewLog, entry(char, at, grade, !!p.unverified[char])],
   }
 }
 
@@ -43,13 +49,21 @@ export function applyPlacement(p: Progress, seeded: Record<string, Card>): Progr
 }
 
 /** 圖鑑裡按「我不會」或「想學」：清掉排程，排到新字清單最前面 */
-export function requestLearn(p: Progress, char: string): Progress {
+export function requestLearn(p: Progress, char: string, at: Date): Progress {
+  const reset = p.cards[char] ? [entry(char, at, Rating.Manual, !!p.unverified[char])] : []
   return {
     ...p,
     cards: omit(p.cards, char),
     unverified: omit(p.unverified, char),
     wantToLearn: [char, ...p.wantToLearn.filter((c) => c !== char)],
+    reviewLog: [...p.reviewLog, ...reset],
   }
+}
+
+/** 重新探路：進度歸零，但作答紀錄留著，每張舊卡補一筆重置，訓練時才接得起來 */
+export function resetForPlacement(p: Progress, blank: Progress, at: Date): Progress {
+  const resets = Object.keys(p.cards).map((c) => entry(c, at, Rating.Manual, !!p.unverified[c]))
+  return { ...blank, settings: p.settings, reviewLog: [...p.reviewLog, ...resets] }
 }
 
 export function displayTier(p: Progress, char: string): Tier {
